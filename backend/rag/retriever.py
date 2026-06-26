@@ -3,21 +3,19 @@ from langchain_community.vectorstores import FAISS
 
 from rag.embeddings import split_documents
 
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
 
-def create_vector_store():
-    """
-    Create a FAISS vector database from the knowledge base.
-    """
+vectorstore = FAISS.from_documents(
+    split_documents(),
+    embeddings
+)
 
-    chunks = split_documents()
 
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
+def retrieve_context(query: str):
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 2})
 
-    vectorstore = FAISS.from_documents(
-        chunks,
-        embeddings
-    )
+    docs = retriever.invoke(query)
 
-    return vectorstore
+    return docs
